@@ -7,10 +7,10 @@ let textQueue = [];
 let textObjects = [];
 let particles = [];
 let lastSpawn = 0;
-const spawnDelay = 900;
-const fallingSpeed = 0.6;
+let spawnDelay = 900;
+let fallingSpeed = 0.6;
+let numberOfEquasions = 20;
 const halfOfWidth = 300;
-const numberOfEquasions = 20;
 const countdownDuration = 3000;
 let useZigzag = false;
 
@@ -26,6 +26,9 @@ function showScreen(id) {
 
 function startGame() {
   showScreen("game-container");
+  console.log(`spawn delay: ${spawnDelay}`);
+  console.log(`falling speed: ${fallingSpeed}`);
+  console.log(`number of equasions: ${numberOfEquasions}`);
 
   textQueue = [];
   textObjects = [];
@@ -92,7 +95,7 @@ function generateMathProblem() {
       const quotient = Math.floor(Math.random() * 12) + 1;
       a = b * quotient;
       result = quotient;
-      display = `${a} ÷ ${b}`;
+      display = `${a} / ${b}`;
       break;
   }
 
@@ -235,6 +238,7 @@ function draw(timestamp) {
 answerInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     const value = parseInt(answerInput.value.trim());
+    console.log(value);
     if (isNaN(value)) return;
 
     let foundMatch = false;
@@ -383,4 +387,44 @@ document.addEventListener("DOMContentLoaded", () => {
       answerInput.value = "";
     }
   });
+});
+
+document.getElementById("settings-button").addEventListener("click", () => {
+  document.getElementById("settings-popup").classList.remove("hidden");
+});
+
+document.getElementById("close-settings").addEventListener("click", () => {
+  document.getElementById("settings-popup").classList.add("hidden");
+});
+
+document.getElementById("apply-settings").addEventListener("click", () => {
+  spawnDelay = parseInt(document.getElementById("input-spawn-delay").value);
+  fallingSpeed = parseFloat(document.getElementById("input-falling-speed").value);
+  numberOfEquasions = parseInt(document.getElementById("input-number-equations").value);
+  
+  document.getElementById("settings-popup").classList.add("hidden");
+});
+
+const popup = document.getElementById("settings-popup");
+const header = document.getElementById("settings-header");
+
+let offsetX = 0, offsetY = 0;
+let isDragging = false;
+
+header.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  const rect = popup.getBoundingClientRect();
+  offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+});
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  popup.style.left = `${e.clientX - offsetX}px`;
+  popup.style.top = `${e.clientY - offsetY}px`;
+  popup.style.transform = "none";
 });

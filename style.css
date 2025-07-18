@@ -50,6 +50,8 @@ body {
 #start-image {
   width: 200px;
   margin-bottom: 20px;
+  animation: floatUpDown 3s ease-in-out infinite;
+  will-change: transform;
 }
 
 #start-button {
@@ -160,6 +162,25 @@ h1{
   transition: width 0.05s linear;
 }
 
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px); /* how high it floats */
+  }
+}
+
+#start-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  flex-direction: row;
+}
+
 #toggle-mode-button {
   font-size: 18px;
   padding: 8px 16px;
@@ -167,4 +188,124 @@ h1{
   cursor: pointer;
   background-color: rgb(1, 32, 1);
   border-style: none;
+}
+
+#settings-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: black;
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+  box-shadow: 0 0 10px rgb(1, 32, 1);
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}
+
+#apply-settings{
+  background-color: rgb(1, 32, 1);
+  border-style: none;
+}
+
+#close-settings{
+  background-color: rgb(1, 32, 1);
+  border-style: none;
+}
+
+#settings-popup input[type="number"] {
+  border: none;
+  outline: none;
+  background-color: #333;
+  color: white;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  width: 100px;
+}
+
+#mode-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#start-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#settings-button {
+  position: absolute;
+  top: 50%;
+  padding-top: 10;
+  transform: translateY(-50%);
+  right: -48px; /* adjust spacing */
+  font-size: 20px;
+  padding: 8px;
+  padding-top: 14px;
+  width: 42px;
+  border: none;
+  border-radius: 6px;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+}
+
+#settings-popup input[type="number"]::-webkit-inner-spin-button,
+#settings-popup input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  background-color: black;
+  border-color: gray;
+  border-width: 1px;
+  border-style:solid;
+  color:rgb(1, 32, 1);
+}
+
+#settings-popup input[type="number"] {
+  -moz-appearance: textfield;
+  background-color: black;
+  border-color: gray;
+  border-width: 1px;
+  border-style:solid;
+  color:rgb(1, 32, 1);
+}
+
+
+#settings-header {
+  cursor: move;
+  background-color: black;
+  padding: 8px;
+  margin: -20px -20px 10px -20px;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  user-select: none;
+}
+
+label {
+  color: darkgreen;
+}
+
+#settings-header {
+  color: darkgreen;
+}
+
+#input-spawn-delay{
+  background-color: rgb(1, 32, 1);
+  color:white;
+}
+
+#input-falling-speed{
+  background-color: rgb(1, 32, 1);
+  color:white;
+}
+
+#input-number-equations{
+  background-color: rgb(1, 32, 1);
+  color:white;
 }
