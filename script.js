@@ -192,12 +192,14 @@ function draw(timestamp) {
       obj.y += obj.speed;
 
       if (obj.y > canvas.height + 20) {
+        console.log(`Missed equation: ${obj.text} = ${obj.result}`);
         endGame();
         return;
       }
     }
 
     if (obj.y > canvas.height + 20) {
+      console.log(`Missed equation: ${obj.text} = ${obj.result}`);
       endGame();
       return;
     }
@@ -253,6 +255,14 @@ answerInput.addEventListener("keydown", (e) => {
     }
 
     if (!foundMatch) {
+      const lowest = textObjects
+        .filter(obj => obj.visible)
+        .reduce((lowest, obj) => (!lowest || obj.y > lowest.y ? obj : lowest), null);
+
+      if (lowest) {
+        console.log(`Wrong answer: ${lowest.text} = ${lowest.result}`);
+      }
+
       endGame();
       return;
     }
@@ -380,6 +390,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!foundMatch) {
+        const lowest = textObjects
+          .filter(obj => obj.visible)
+          .reduce((lowest, obj) => (!lowest || obj.y > lowest.y ? obj : lowest), null);
+
+        if (lowest) {
+          console.log(`Wrong answer: ${lowest.text} = ${lowest.result}`);
+        }
+
         endGame();
         return;
       }
