@@ -89,7 +89,7 @@ function generateMathProblem() {
       break;
     case '/':
       b = Math.floor(Math.random() * 12) + 2;
-      const quotient = Math.floor(Math.random() * 12) + 2;
+      const quotient = Math.floor(Math.random() * 12) + 1;
       a = b * quotient;
       result = quotient;
       display = `${a} ÷ ${b}`;
