@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Game</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <body>
+      <!-- Start Screen -->
+      <div id="start-screen">
+        <img src="image.jpg" alt="Start Image" id="start-image" />
+        <h1>Math Game</h1>
+        <button id="start-button">Start</button>
+        <button id="toggle-mode-button">mode: angled</button>
+      </div>
+
+      <!-- Game Screen -->
+      <div id="game-container" style="display: none;">
+        <div id="game-box">
+          <canvas id="main-canvas" width="600" height="600"></canvas>
+          <input type="text" id="answer-input" placeholder="Enter result">
+        </div>
+        <div id="countdown-bar-wrapper">
+          <div id="countdown-bar"></div>
+        </div>
+      </div>
+
+      <!-- End Screen -->
+      <div id="end-screen" style="display: none;">
+        <img src="image.jpg" alt="Failed" id="end-image" />
+        <h1>Failed</h1>
+        <div id="end-countdown-bar-wrapper">
+          <div id="end-countdown-bar"></div>
+        </div>
+      </div>
+
+      <!-- Win Screen -->
+      <div id="win-screen" style="display: none;">
+        <img src="image.jpg" alt="You Win" id="win-image" />
+        <h1>EZ</h1>
+        <div id="win-countdown-bar-wrapper">
+          <div id="win-countdown-bar"></div>
+        </div>
+      </div>
+
+      <script src="script.js"></script>
+    </body>
+</html>
