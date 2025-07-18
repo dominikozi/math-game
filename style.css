@@ -17,7 +17,7 @@ body {
 }
 
 #main-canvas {
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
 }
 
 #answer-input {
@@ -56,7 +56,7 @@ body {
   font-size: 24px;
   padding: 10px 20px;
   cursor: pointer;
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
   border-style: none;
 }
 
@@ -103,7 +103,7 @@ h1{
 #countdown-bar {
   width: 100%;
   height: 100%;
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
   transition: width 0.05s linear;
 }
 
@@ -117,7 +117,7 @@ h1{
 #end-countdown-bar {
   width: 100%;
   height: 100%;
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
   transition: width 0.05s linear;
 }
 
@@ -156,7 +156,7 @@ h1{
 #win-countdown-bar {
   width: 100%;
   height: 100%;
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
   transition: width 0.05s linear;
 }
 
@@ -165,6 +165,6 @@ h1{
   padding: 8px 16px;
   margin-top: 10px;
   cursor: pointer;
-  background-color: darkgreen;
+  background-color: rgb(1, 32, 1);
   border-style: none;
 }
