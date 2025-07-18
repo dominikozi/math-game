@@ -77,7 +77,7 @@ function generateMathProblem() {
       break;
     case '-':
       a = Math.floor(Math.random() * 39) + 2;
-      b = Math.floor(Math.random() * a);
+      b = Math.floor(Math.random() * (a - 1)) + 1;
       result = a - b;
       display = `${a} - ${b}`;
       break;
