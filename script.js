@@ -13,6 +13,23 @@ let numberOfEquations = 20;
 let countdownDuration = 2000;
 let useZigzag = false;
 let drawRectangles = true;
+let loadingActive = false;
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const config = {
+  '+': { aMin: 1, aMax: 20, bMin: 1, bMax: 15 },
+  '-': { aMin: 4, aMax: 23, bMinGap: 3 },
+  '*': { aMin: 1, aMax: 12, bMin: 1, bMax: 12 },
+  '/': { quotientMin: 2, quotientMax: 10, bMin: 1, bMax: 10 }
+};
+
+const GAME_CONSTANTS = {
+  EXPLOSION_FRAMES: 10,
+  PARTICLE_SPACING: 16,
+  RECT_PADDING: 4,
+  FONT_SIZE: 20,
+};
 
 function showScreen(id) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -26,9 +43,7 @@ function showScreen(id) {
 
 function startGame() {
   showScreen("game-container");
-  console.log(`spawn delay: ${spawnDelay}`);
-  console.log(`falling speed: ${fallingSpeed}`);
-  console.log(`number of equasions: ${numberOfEquations}`);
+  logConfig();
 
   textQueue = [];
   textObjects = [];
@@ -56,6 +71,18 @@ function startGame() {
   });
 }
 
+function logConfig(){
+  console.log("=== GAME SETTINGS ===");
+  console.log(`spawn delay: ${spawnDelay}`);
+  console.log(`falling speed: ${fallingSpeed}`);
+  console.log(`number of equasions: ${numberOfEquations}`);
+
+  console.log("=== EQUATION CONFIG ===");
+  console.log(`Addition:    aMin=${config['+'].aMin}, aMax=${config['+'].aMax}, bMin=${config['+'].bMin}, bMax=${config['+'].bMax}`);
+  console.log(`Subtraction: aMin=${config['-'].aMin}, aMax=${config['-'].aMax}, bMinGap=${config['-'].bMinGap}`);
+  console.log(`Multiplication: aMin=${config['*'].aMin}, aMax=${config['*'].aMax}, bMin=${config['*'].bMin}, bMax=${config['*'].bMax}`);
+  console.log(`Division: quotientMin=${config['/'].quotientMin}, quotientMax=${config['/'].quotientMax}, bMin=${config['/'].bMin}, bMax=${config['/'].bMax}`);
+}
 
 function endGame() {
   gameRunning = false;
@@ -65,13 +92,6 @@ function endGame() {
     showScreen("start-screen");
   });
 }
-
-const config = {
-  '+': { aMin: 1, aMax: 20, bMin: 1, bMax: 15 },
-  '-': { aMin: 4, aMax: 23, bMinGap: 3 },
-  '*': { aMin: 1, aMax: 12, bMin: 1, bMax: 12 },
-  '/': { quotientMin: 2, quotientMax: 10, bMin: 1, bMax: 10 }
-};
 
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -185,7 +205,7 @@ function draw(timestamp) {
       ctx.save();
       ctx.translate(x, obj.y);
       const scale = 1 + obj.explodeFrame * 0.1;
-      const alpha = 1 - obj.explodeFrame / 10;
+      const alpha = 1 - obj.explodeFrame / GAME_CONSTANTS.EXPLOSION_FRAMES;
       ctx.scale(scale, scale);
       ctx.globalAlpha = alpha;
       ctx.fillStyle = "yellow";
@@ -193,7 +213,7 @@ function draw(timestamp) {
       ctx.restore();
 
       obj.explodeFrame += 1;
-      if (obj.explodeFrame > 10) {
+      if (obj.explodeFrame > GAME_CONSTANTS.EXPLOSION_FRAMES) {
         obj.exploding = false;
         obj.visible = false;
       }
@@ -206,10 +226,10 @@ function draw(timestamp) {
         ctx.textAlign = "left";
         ctx.fillStyle = obj.color || "white";
 
-        const padding = 4;
+        const padding = GAME_CONSTANTS.RECT_PADDING;
         const textMetrics = ctx.measureText(obj.text);
         const textWidth = textMetrics.width;
-        const textHeight = 20;
+        const textHeight = GAME_CONSTANTS.FONT_SIZE;
 
         const maxX = canvas.width - textWidth - padding * 2;
         x = Math.min(x, maxX);
@@ -266,6 +286,7 @@ function draw(timestamp) {
 
 answerInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
+    if(loadingActive) return;
     const value = parseInt(answerInput.value.trim());
     console.log(value);
     if (isNaN(value)) return;
@@ -298,32 +319,8 @@ answerInput.addEventListener("keydown", (e) => {
   }
 });
 
-function startCountdown(callback) {
-  const bar = document.getElementById("countdown-bar");
-  let duration = countdownDuration;
-  let start = null;
-
-  function animateBar(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
-    const progress = Math.max(0, 1 - elapsed / duration);
-    bar.style.width = `${progress * 100}%`;
-
-    if (elapsed < duration) {
-      requestAnimationFrame(animateBar);
-    } else {
-      bar.style.width = "0%";
-      document.getElementById("countdown-bar-wrapper").style.display = "none";
-      callback(); // start the game
-    }
-  }
-
-  bar.style.width = "100%";
-  requestAnimationFrame(animateBar);
-}
-
 function createParticles(text, x, y) {
-  const spacing = 16;
+  const spacing = GAME_CONSTANTS.PARTICLE_SPACING;
   for (let i = 0; i < text.length; i++) {
     particles.push({
       char: text[i],
@@ -345,21 +342,85 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+let isCustom = false;
+
 document.getElementById("settings-button").addEventListener("click", () => {
   document.getElementById("settings-popup").classList.remove("hidden");
+  
+  document.getElementById("settings-config").classList.add("hidden");
+  document.getElementById("settings-inputs").classList.remove("hidden");
 });
 
-document.getElementById("close-settings").addEventListener("click", () => {
-  document.getElementById("settings-popup").classList.add("hidden");
+document.getElementById("custom-settings").addEventListener("click", () => {
+  isCustom = !isCustom;
+  if(isCustom){
+    document.getElementById("settings-config").classList.remove("hidden");
+    document.getElementById("settings-inputs").classList.add("hidden");
+  }else{
+    document.getElementById("settings-config").classList.add("hidden");
+    document.getElementById("settings-inputs").classList.remove("hidden");
+  }
+});
+
+document.getElementById("default-settings").addEventListener("click", () => {
+  document.getElementById("config-addition-a-min").value = 1;
+  document.getElementById("config-addition-a-max").value = 20;
+  document.getElementById("config-addition-b-min").value = 1;
+  document.getElementById("config-addition-b-max").value = 15;
+
+  document.getElementById("config-sub-a-min").value = 4;
+  document.getElementById("config-sub-a-max").value = 23;
+  document.getElementById("config-sub-min-gap").value = 3;
+
+  document.getElementById("config-multi-a-min").value = 1;
+  document.getElementById("config-multi-a-max").value = 12;
+  document.getElementById("config-multi-b-min").value = 1;
+  document.getElementById("config-multi-b-max").value = 12;
+
+  document.getElementById("config-div-quotient-min").value = 2;
+  document.getElementById("config-div-quotient-max").value = 10;
+  document.getElementById("config-div-b-min").value = 1;
+  document.getElementById("config-div-b-max").value = 10;
+
+  document.getElementById("input-spawn-delay").value = 900;
+  document.getElementById("input-falling-speed").value = 0.6;
+  document.getElementById("input-number-equations").value = 20;
 });
 
 document.getElementById("apply-settings").addEventListener("click", () => {
-  spawnDelay = parseInt(document.getElementById("input-spawn-delay").value);
-  fallingSpeed = parseFloat(document.getElementById("input-falling-speed").value);
-  numberOfEquations = parseInt(document.getElementById("input-number-equations").value);
-  
+  spawnDelay = clampAndUpdate("input-spawn-delay", 1, 5000);
+  fallingSpeed = clampAndUpdate("input-falling-speed", 0.1, 5, true);
+  numberOfEquations = clampAndUpdate("input-number-equations", 1, 100);
+
   document.getElementById("settings-popup").classList.add("hidden");
+
+  config['+'].aMin = clampAndUpdate("config-addition-a-min", 1, 5000);
+  config['+'].aMax = clampAndUpdate("config-addition-a-max", 1, 5000);
+  config['+'].bMin = clampAndUpdate("config-addition-b-min", 1, 5000);
+  config['+'].bMax = clampAndUpdate("config-addition-b-max", 1, 5000);
+
+  config['-'].aMin = clampAndUpdate("config-sub-a-min", 1, 5000);
+  config['-'].aMax = clampAndUpdate("config-sub-a-max", 1, 5000);
+  config['-'].bMinGap = clampAndUpdate("config-sub-min-gap", 1, 5000);
+
+  config['*'].aMin = clampAndUpdate("config-multi-a-min", 1, 100);
+  config['*'].aMax = clampAndUpdate("config-multi-a-max", 1, 100);
+  config['*'].bMin = clampAndUpdate("config-multi-b-min", 1, 100);
+  config['*'].bMax = clampAndUpdate("config-multi-b-max", 1, 100);
+
+  config['/'].quotientMin = clampAndUpdate("config-div-quotient-min", 1, 100, true);
+  config['/'].quotientMax = clampAndUpdate("config-div-quotient-max", 1, 100, true);
+  config['/'].bMin = clampAndUpdate("config-div-b-min", 1, 100, true);
+  config['/'].bMax = clampAndUpdate("config-div-b-max", 1, 100, true);
 });
+
+function clampAndUpdate(inputId, min, max, isFloat = false) {
+  const input = document.getElementById(inputId);
+  const rawValue = isFloat ? parseFloat(input.value) : parseInt(input.value);
+  const clamped = Math.max(min, Math.min(max, rawValue));
+  input.value = clamped;
+  return clamped;
+}
 
 const popup = document.getElementById("settings-popup");
 const header = document.getElementById("settings-header");
@@ -387,6 +448,7 @@ document.addEventListener("mousemove", (e) => {
 
 
 function startGenericCountdown(wrapperId, barId, callback) {
+  loadingActive = true;
   const wrapper = document.getElementById(wrapperId);
   const bar = document.getElementById(barId);
 
@@ -407,9 +469,14 @@ function startGenericCountdown(wrapperId, barId, callback) {
     } else {
       bar.style.width = "0%";
       wrapper.style.display = "none";
+      loadingActive = false;
       callback();
     }
   }
 
   requestAnimationFrame(animate);
 }
+
+document.getElementById("settings-close").addEventListener("click", () => {
+  document.getElementById("settings-popup").classList.add("hidden");
+});

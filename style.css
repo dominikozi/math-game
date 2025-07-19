@@ -196,7 +196,8 @@ h1{
 }
 
 #apply-settings,
-#close-settings{
+#custom-settings,
+#default-settings{
   background-color: rgb(1, 32, 1);
   border-style: none;
 }
@@ -253,17 +254,15 @@ h1{
   cursor: move;
   background-color: black;
   padding: 8px;
+  padding-top: 14px;
   margin: -20px -20px 10px -20px;
   border-radius: 10px 10px 0 0;
   font-weight: bold;
   user-select: none;
-}
-
-label {
   color: darkgreen;
 }
 
-#settings-header {
+label {
   color: darkgreen;
 }
 
@@ -272,4 +271,26 @@ label {
 #input-number-equations{
   background-color: rgb(1, 32, 1);
   color:white;
+}
+
+.close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-button:hover {
+  color: #000;
+}
+
+#settings-close{
+  color: darkgreen;
+}
+#settings-close:hover{
+  color: green;
 }
