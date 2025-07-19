@@ -9,10 +9,10 @@ let particles = [];
 let lastSpawn = 0;
 let spawnDelay = 900;
 let fallingSpeed = 0.6;
-let numberOfEquasions = 20;
-const halfOfWidth = 300;
-const countdownDuration = 3000;
+let numberOfEquations = 20;
+let countdownDuration = 2000;
 let useZigzag = false;
+let drawRectangles = true;
 
 function showScreen(id) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -28,7 +28,7 @@ function startGame() {
   showScreen("game-container");
   console.log(`spawn delay: ${spawnDelay}`);
   console.log(`falling speed: ${fallingSpeed}`);
-  console.log(`number of equasions: ${numberOfEquasions}`);
+  console.log(`number of equasions: ${numberOfEquations}`);
 
   textQueue = [];
   textObjects = [];
@@ -45,11 +45,11 @@ function startGame() {
   barWrapper.style.display = "block";
   bar.style.width = "100%";
 
-  for (let i = 0; i < numberOfEquasions; i++) {
+  for (let i = 0; i < numberOfEquations; i++) {
     textQueue.push(generateMathProblem());
   }
 
-  startCountdown(() => {
+  startGenericCountdown("countdown-bar-wrapper", "countdown-bar", () => {
     document.getElementById("countdown-bar-wrapper").style.display = "none";
     gameRunning = true;
     requestAnimationFrame(draw);
@@ -61,9 +61,20 @@ function endGame() {
   gameRunning = false;
   showScreen("end-screen");
 
-  startEndCountdown(() => {
+  startGenericCountdown("end-countdown-bar-wrapper", "end-countdown-bar", () => {
     showScreen("start-screen");
   });
+}
+
+const config = {
+  '+': { aMin: 1, aMax: 20, bMin: 1, bMax: 15 },
+  '-': { aMin: 4, aMax: 23, bMinGap: 3 },
+  '*': { aMin: 1, aMax: 12, bMin: 1, bMax: 12 },
+  '/': { quotientMin: 2, quotientMax: 10, bMin: 1, bMax: 10 }
+};
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function generateMathProblem() {
@@ -73,26 +84,26 @@ function generateMathProblem() {
 
   switch (operator) {
     case '+':
-      a = Math.floor(Math.random() * 39) + 2;
-      b = Math.floor(Math.random() * 39) + 1;
+      a = rand(config['+'].aMin, config['+'].aMax);
+      b = rand(config['+'].bMin, config['+'].bMax);
       result = a + b;
       display = `${a} + ${b}`;
       break;
     case '-':
-      a = Math.floor(Math.random() * 39) + 2;
-      b = Math.floor(Math.random() * (a - 1)) + 1;
+      a = rand(config['-'].aMin, config['-'].aMax);
+      b = rand(1, a - config['-'].bMinGap);
       result = a - b;
       display = `${a} - ${b}`;
       break;
     case '*':
-      a = Math.floor(Math.random() * 13) + 1;
-      b = Math.floor(Math.random() * 13) + 1;
+      a = rand(config['*'].aMin, config['*'].aMax);
+      b = rand(config['*'].bMin, config['*'].bMax);
       result = a * b;
       display = `${a} × ${b}`;
       break;
     case '/':
-      b = Math.floor(Math.random() * 12) + 2;
-      const quotient = Math.floor(Math.random() * 12) + 1;
+      const quotient = rand(config['/'].quotientMin, config['/'].quotientMax);
+      b = rand(config['/'].bMin, config['/'].bMax);
       a = b * quotient;
       result = quotient;
       display = `${a} / ${b}`;
@@ -113,7 +124,7 @@ function createFallingText(problemObj) {
     const amplitude = 80 + Math.random() * 60;
     const frequency = 0.015 / fallingSpeed;
 
-    const trajectory = y => halfOfWidth + amplitude * Math.sin(y * frequency + phase);
+    const trajectory = y => (canvas.width/2) + amplitude * Math.sin(y * frequency + phase);
 
     textObjects.push({
       ...problemObj,
@@ -130,7 +141,7 @@ function createFallingText(problemObj) {
     const angleRad = angleDeg * Math.PI / 180;
     const dx = Math.tan(angleRad); 
 
-    const startX = 300 + Math.random() * 250; 
+    const startX = (canvas.width/2) + Math.random() * 250; 
 
     textObjects.push({
       ...problemObj,
@@ -188,14 +199,31 @@ function draw(timestamp) {
       }
     } else {
       ctx.fillStyle = "white";
+
+      if (drawRectangles) {
+        ctx.font = "16px 'Courier New', monospace";
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        ctx.fillStyle = obj.color || "white";
+
+        const padding = 4;
+        const textMetrics = ctx.measureText(obj.text);
+        const textWidth = textMetrics.width;
+        const textHeight = 20;
+
+        const maxX = canvas.width - textWidth - padding * 2;
+        x = Math.min(x, maxX);
+
+        const drawX = x;
+        const drawY = obj.y;
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(drawX - padding, drawY - padding, textWidth + 2 * padding, textHeight + 2 * padding);
+      }
+
       ctx.fillText(obj.text, x, obj.y);
       obj.y += obj.speed;
-
-      if (obj.y > canvas.height + 20) {
-        console.log(`Missed equation: ${obj.text} = ${obj.result}`);
-        endGame();
-        return;
-      }
     }
 
     if (obj.y > canvas.height + 20) {
@@ -216,24 +244,23 @@ function draw(timestamp) {
     gameRunning = false;
     showScreen("win-screen");
 
-    startWinCountdown(() => {
+    startGenericCountdown("win-countdown-bar-wrapper", "win-countdown-bar", () => {
       showScreen("start-screen");
     });
     return;
   }
 
   for (let i = particles.length - 1; i >= 0; i--) {
-  const p = particles[i];
-  ctx.fillStyle = `rgba(255, 255, 0, ${p.alpha})`;
-  ctx.fillText(p.char, p.x, p.y);
-  p.y += p.dy;
-  p.alpha -= 0.02;
+    const p = particles[i];
+    ctx.fillStyle = `rgba(255, 255, 0, ${p.alpha})`;
+    ctx.fillText(p.char, p.x, p.y);
+    p.y += p.dy;
+    p.alpha -= 0.02;
 
-  if (p.alpha <= 0 || p.y > canvas.height + 50) {
-    particles.splice(i, 1); 
+    if (p.alpha <= 0 || p.y > canvas.height + 50) {
+      particles.splice(i, 1);
+    }
   }
-}
-
   requestAnimationFrame(draw);
 }
 
@@ -295,62 +322,6 @@ function startCountdown(callback) {
   requestAnimationFrame(animateBar);
 }
 
-function startEndCountdown(callback) {
-  const wrapper = document.getElementById("end-countdown-bar-wrapper");
-  const bar = document.getElementById("end-countdown-bar");
-
-  wrapper.style.display = "block";
-  bar.style.width = "100%";
-
-  let duration = countdownDuration;
-  let start = null;
-
-  function animateEndBar(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
-    const progress = Math.max(0, 1 - elapsed / duration);
-    bar.style.width = `${progress * 100}%`;
-
-    if (elapsed < duration) {
-      requestAnimationFrame(animateEndBar);
-    } else {
-      bar.style.width = "0%";
-      wrapper.style.display = "none";
-      callback();
-    }
-  }
-
-  requestAnimationFrame(animateEndBar);
-}
-
-function startWinCountdown(callback) {
-  const wrapper = document.getElementById("win-countdown-bar-wrapper");
-  const bar = document.getElementById("win-countdown-bar");
-
-  wrapper.style.display = "block";
-  bar.style.width = "100%";
-
-  let duration = countdownDuration;
-  let start = null;
-
-  function animateWinBar(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
-    const progress = Math.max(0, 1 - elapsed / duration);
-    bar.style.width = `${progress * 100}%`;
-
-    if (elapsed < duration) {
-      requestAnimationFrame(animateWinBar);
-    } else {
-      bar.style.width = "0%";
-      wrapper.style.display = "none";
-      callback();
-    }
-  }
-
-  requestAnimationFrame(animateWinBar);
-}
-
 function createParticles(text, x, y) {
   const spacing = 16;
   for (let i = 0; i < text.length; i++) {
@@ -372,39 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const modeText = useZigzag ? "mode: zigzag" : "mode: angled";
     document.getElementById("toggle-mode-button").textContent = modeText;
   });
-
-  answerInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      const value = parseInt(answerInput.value.trim());
-      if (isNaN(value)) return;
-
-      let foundMatch = false;
-
-      for (const obj of textObjects) {
-        if (obj.visible && obj.result === value) {
-          const x = obj.type === "zigzag" ? obj.trajectory(obj.y) : obj.x;
-          createParticles(obj.text, x, obj.y);
-          obj.visible = false;
-          foundMatch = true;
-        }
-      }
-
-      if (!foundMatch) {
-        const lowest = textObjects
-          .filter(obj => obj.visible)
-          .reduce((lowest, obj) => (!lowest || obj.y > lowest.y ? obj : lowest), null);
-
-        if (lowest) {
-          console.log(`Wrong answer: ${lowest.text} = ${lowest.result}`);
-        }
-
-        endGame();
-        return;
-      }
-
-      answerInput.value = "";
-    }
-  });
 });
 
 document.getElementById("settings-button").addEventListener("click", () => {
@@ -418,7 +356,7 @@ document.getElementById("close-settings").addEventListener("click", () => {
 document.getElementById("apply-settings").addEventListener("click", () => {
   spawnDelay = parseInt(document.getElementById("input-spawn-delay").value);
   fallingSpeed = parseFloat(document.getElementById("input-falling-speed").value);
-  numberOfEquasions = parseInt(document.getElementById("input-number-equations").value);
+  numberOfEquations = parseInt(document.getElementById("input-number-equations").value);
   
   document.getElementById("settings-popup").classList.add("hidden");
 });
@@ -446,3 +384,32 @@ document.addEventListener("mousemove", (e) => {
   popup.style.top = `${e.clientY - offsetY}px`;
   popup.style.transform = "none";
 });
+
+
+function startGenericCountdown(wrapperId, barId, callback) {
+  const wrapper = document.getElementById(wrapperId);
+  const bar = document.getElementById(barId);
+
+  wrapper.style.display = "block";
+  bar.style.width = "100%";
+
+  let duration = countdownDuration;
+  let start = null;
+
+  function animate(timestamp) {
+    if (!start) start = timestamp;
+    const elapsed = timestamp - start;
+    const progress = Math.max(0, 1 - elapsed / duration);
+    bar.style.width = `${progress * 100}%`;
+
+    if (elapsed < duration) {
+      requestAnimationFrame(animate);
+    } else {
+      bar.style.width = "0%";
+      wrapper.style.display = "none";
+      callback();
+    }
+  }
+
+  requestAnimationFrame(animate);
+}

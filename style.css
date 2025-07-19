@@ -51,7 +51,6 @@ body {
   width: 200px;
   margin-bottom: 20px;
   animation: floatUpDown 3s ease-in-out infinite;
-  will-change: transform;
 }
 
 #start-button {
@@ -95,7 +94,9 @@ body {
 h1{
   color:darkgreen;
 }
-#countdown-bar-wrapper {
+#countdown-bar-wrapper,
+#end-countdown-bar-wrapper,
+#win-countdown-bar-wrapper {
   width: 600px;
   height: 20px;
   background-color: #444;
@@ -107,13 +108,6 @@ h1{
   height: 100%;
   background-color: rgb(1, 32, 1);
   transition: width 0.05s linear;
-}
-
-#end-countdown-bar-wrapper {
-  width: 600px;
-  height: 20px;
-  background-color: #444;
-  margin-top: 20px;
 }
 
 #end-countdown-bar {
@@ -147,12 +141,6 @@ h1{
 
 #win-image {
   max-width: 200px;
-}
-
-#win-countdown-bar-wrapper {
-  width: 600px;
-  height: 20px;
-  background-color: #444;
 }
 
 #win-countdown-bar {
@@ -207,25 +195,10 @@ h1{
   display: none;
 }
 
-#apply-settings{
-  background-color: rgb(1, 32, 1);
-  border-style: none;
-}
-
+#apply-settings,
 #close-settings{
   background-color: rgb(1, 32, 1);
   border-style: none;
-}
-
-#settings-popup input[type="number"] {
-  border: none;
-  outline: none;
-  background-color: #333;
-  color: white;
-  font-size: 16px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  width: 100px;
 }
 
 #mode-wrapper {
@@ -233,16 +206,9 @@ h1{
   display: inline-block;
 }
 
-#start-controls {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
 #settings-button {
   position: absolute;
   top: 50%;
-  padding-top: 10;
   transform: translateY(-50%);
   right: -48px; /* adjust spacing */
   font-size: 20px;
@@ -269,10 +235,16 @@ h1{
 
 #settings-popup input[type="number"] {
   -moz-appearance: textfield;
+  border: none;
+  outline: none;
   background-color: black;
   border-color: gray;
   border-width: 1px;
   border-style:solid;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100px;
   color:rgb(1, 32, 1);
 }
 
@@ -295,16 +267,8 @@ label {
   color: darkgreen;
 }
 
-#input-spawn-delay{
-  background-color: rgb(1, 32, 1);
-  color:white;
-}
-
-#input-falling-speed{
-  background-color: rgb(1, 32, 1);
-  color:white;
-}
-
+#input-spawn-delay,
+#input-falling-speed,
 #input-number-equations{
   background-color: rgb(1, 32, 1);
   color:white;
