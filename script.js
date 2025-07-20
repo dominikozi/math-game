@@ -8,7 +8,7 @@ let textObjects = [];
 let particles = [];
 let lastSpawn = 0;
 let spawnDelay = 900;
-let fallingSpeed = 0.6;
+let fallDurationMs = 3000;
 let numberOfEquations = 20;
 let countdownDuration = 2000;
 let useZigzag = false;
@@ -74,7 +74,7 @@ function startGame() {
 function logConfig(){
   console.log("=== GAME SETTINGS ===");
   console.log(`spawn delay: ${spawnDelay}`);
-  console.log(`falling speed: ${fallingSpeed}`);
+  console.log(`fall duration: ${fallDurationMs}`);
   console.log(`number of equasions: ${numberOfEquations}`);
 
   console.log("=== EQUATION CONFIG ===");
@@ -138,45 +138,47 @@ function generateMathProblem() {
   };
 }
 
-function createFallingText(problemObj) {
+function createFallingText(problemObj, currentTimestamp = performance.now()) {
+  const duration = fallDurationMs;
+
+  const baseProps = {
+    ...problemObj,
+    y: 0,
+    startY: 0,
+    targetY: canvas.height,
+    startTime: currentTimestamp,
+    duration: duration,
+    visible: false,
+    exploding: false,
+    explodeFrame: 0,
+  };
+
   if (useZigzag) {
     const phase = Math.random() * Math.PI * 2;
     const amplitude = 80 + Math.random() * 60;
-    const frequency = 0.015 / fallingSpeed;
+    const frequency = 0.015;
 
-    const trajectory = y => (canvas.width/2) + amplitude * Math.sin(y * frequency + phase);
+    const trajectory = y => (canvas.width / 2) + amplitude * Math.sin(y * frequency + phase);
 
     textObjects.push({
-      ...problemObj,
-      y: 0,
+      ...baseProps,
       trajectory,
-      speed: fallingSpeed,
-      visible: false,
-      exploding: false,
-      explodeFrame: 0,
-      type: "zigzag"
+      type: "zigzag",
     });
   } else {
-    const angleDeg = -Math.random() * 30; 
+    const angleDeg = -Math.random() * 30;
     const angleRad = angleDeg * Math.PI / 180;
-    const dx = Math.tan(angleRad); 
-
-    const startX = (canvas.width/2) + Math.random() * 250; 
+    const dx = Math.tan(angleRad);
+    const startX = (canvas.width / 2) + Math.random() * 250;
 
     textObjects.push({
-      ...problemObj,
-      x: startX,
-      y: 0,
+      ...baseProps,
+      startX: startX,
       dx: dx,
-      speed: fallingSpeed,
-      visible: false,
-      exploding: false,
-      explodeFrame: 0,
       type: "angled"
     });
   }
 }
-
 
 function draw(timestamp) {
   if (!gameRunning) return;
@@ -190,15 +192,17 @@ function draw(timestamp) {
 
     let x;
 
+    const elapsed = timestamp - obj.startTime;
+    const progress = Math.min(1, elapsed / obj.duration);
+    obj.y = obj.startY + (obj.targetY - obj.startY) * progress;
+
     if (obj.type === "zigzag") {
       x = obj.trajectory(obj.y);
-      obj.y += obj.speed;
     } else if (obj.type === "angled") {
-      x = obj.x;
-      obj.y += obj.speed;
-      obj.x += obj.dx * obj.speed;
-      if (obj.x < 0) obj.x = 0;
-      if (obj.x > canvas.width - 50) obj.x = canvas.width - 50;
+      x = obj.startX + obj.dx * (obj.y - obj.startY);
+      if (x < 0) x = 0;
+      if (x > canvas.width - 50) x = canvas.width - 50;
+      obj.x = x;
     }
 
     if (obj.exploding) {
@@ -243,10 +247,9 @@ function draw(timestamp) {
       }
 
       ctx.fillText(obj.text, x, obj.y);
-      obj.y += obj.speed;
     }
 
-    if (obj.y > canvas.height + 20) {
+    if (progress >= 1) {
       console.log(`Missed equation: ${obj.text} = ${obj.result}`);
       endGame();
       return;
@@ -255,7 +258,7 @@ function draw(timestamp) {
 
   if (textQueue.length > 0 && timestamp - lastSpawn > spawnDelay) {
     const problem = textQueue.shift();
-    createFallingText(problem);
+    createFallingText(problem, timestamp);
     textObjects[textObjects.length - 1].visible = true;
     lastSpawn = timestamp;
   }
@@ -281,6 +284,7 @@ function draw(timestamp) {
       particles.splice(i, 1);
     }
   }
+
   requestAnimationFrame(draw);
 }
 
@@ -372,9 +376,9 @@ document.getElementById("default-settings").addEventListener("click", () => {
   document.getElementById("config-sub-a-max").value = 23;
   document.getElementById("config-sub-min-gap").value = 3;
 
-  document.getElementById("config-multi-a-min").value = 1;
+  document.getElementById("config-multi-a-min").value = 2;
   document.getElementById("config-multi-a-max").value = 12;
-  document.getElementById("config-multi-b-min").value = 1;
+  document.getElementById("config-multi-b-min").value = 2;
   document.getElementById("config-multi-b-max").value = 12;
 
   document.getElementById("config-div-quotient-min").value = 2;
@@ -383,13 +387,13 @@ document.getElementById("default-settings").addEventListener("click", () => {
   document.getElementById("config-div-b-max").value = 10;
 
   document.getElementById("input-spawn-delay").value = 900;
-  document.getElementById("input-falling-speed").value = 0.6;
+  document.getElementById("input-falling-speed").value = 3000;
   document.getElementById("input-number-equations").value = 20;
 });
 
 document.getElementById("apply-settings").addEventListener("click", () => {
   spawnDelay = clampAndUpdate("input-spawn-delay", 1, 5000);
-  fallingSpeed = clampAndUpdate("input-falling-speed", 0.1, 5, true);
+  fallDurationMs = clampAndUpdate("input-falling-speed", 500, 5000);
   numberOfEquations = clampAndUpdate("input-number-equations", 1, 100);
 
   document.getElementById("settings-popup").classList.add("hidden");
