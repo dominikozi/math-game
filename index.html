@@ -41,6 +41,7 @@
         </div>
         <div id="settings-config">
           <label>
+            <input type="checkbox" id="addition-enabled" name="add-enabled" checked="true">
             Addition (a min/max, b min/max):<br>
             <input type="number" id="config-addition-a-min" value="1"/>
             <input type="number" id="config-addition-a-max" value="20"/>
@@ -49,6 +50,7 @@
           </label><br><br>
 
           <label>
+            <input type="checkbox" id="substraction-enabled" name="sub-enabled" checked="true">
             Substraction (a min/max, min gap):<br>
             <input type="number" id="config-sub-a-min" value="4"/>
             <input type="number" id="config-sub-a-max" value="20"/>
@@ -56,6 +58,7 @@
           </label><br><br>
 
           <label>
+            <input type="checkbox" id="multiplication-enabled" name="multi-enabled" checked="true">
             Multiplication (multiplicand min/max, multiplier min/max):<br>
             <input type="number" id="config-multi-a-min" value="1"/>
             <input type="number" id="config-multi-a-max" value="12"/>
@@ -64,6 +67,7 @@
           </label><br><br>
 
           <label>
+            <input type="checkbox" id="division-enabled" name="div-enabled" checked="true">
             Division (quotient min/max, divisor min/max):<br>
             <input type="number" step="0.1" id="config-div-quotient-min" value="2"/>
             <input type="number" step="0.1" id="config-div-quotient-max" value="10"/>
@@ -92,6 +96,9 @@
     <div id="end-screen" style="display: none;">
       <img src="image.jpg" alt="Failed" id="end-image" />
       <h1>Failed</h1>
+      <label id="equation-label"></label>
+      <label id="input-label"></label>
+      <br><br>
       <div id="end-countdown-bar-wrapper">
         <div id="end-countdown-bar"></div>
       </div>

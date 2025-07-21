@@ -11,6 +11,7 @@ let spawnDelay = 900;
 let fallDurationMs = 3000;
 let numberOfEquations = 20;
 let countdownDuration = 2000;
+let endCountdownDuration = 3000;
 let useZigzag = false;
 let drawRectangles = true;
 let loadingActive = false;
@@ -84,13 +85,15 @@ function logConfig(){
   console.log(`Division: quotientMin=${config['/'].quotientMin}, quotientMax=${config['/'].quotientMax}, bMin=${config['/'].bMin}, bMax=${config['/'].bMax}`);
 }
 
-function endGame() {
+function endGame(equation, input) {
   gameRunning = false;
   showScreen("end-screen");
+  document.getElementById("equation-label").textContent = equation;
+  document.getElementById("input-label").textContent = input != null ? `Input: ${input}` : "No input in time";
 
   startGenericCountdown("end-countdown-bar-wrapper", "end-countdown-bar", () => {
     showScreen("start-screen");
-  });
+  }, endCountdownDuration);
 }
 
 function rand(min, max) {
@@ -98,7 +101,13 @@ function rand(min, max) {
 }
 
 function generateMathProblem() {
-  const operators = ['+', '-', '*', '*', '/'];
+  let operators = [];
+  if (document.getElementById("addition-enabled").checked) operators.push('+');
+  if (document.getElementById("substraction-enabled").checked) operators.push('-');
+  if (document.getElementById("multiplication-enabled").checked) operators.push('*');
+  if (document.getElementById("division-enabled").checked) operators.push('/');
+  if (operators.length==0) operators = ['+', '-', '*', '/'];
+
   const operator = operators[Math.floor(Math.random() * operators.length)];
   let a, b, display, result;
 
@@ -225,7 +234,7 @@ function draw(timestamp) {
       ctx.fillStyle = "white";
 
       if (drawRectangles) {
-        ctx.font = "16px 'Courier New', monospace";
+        ctx.font = "18px 'Courier New', monospace";
         ctx.textBaseline = "top";
         ctx.textAlign = "left";
         ctx.fillStyle = obj.color || "white";
@@ -250,8 +259,7 @@ function draw(timestamp) {
     }
 
     if (progress >= 1) {
-      console.log(`Missed equation: ${obj.text} = ${obj.result}`);
-      endGame();
+      endGame(`Missed equation: ${obj.text} = ${obj.result}`, );
       return;
     }
   }
@@ -311,11 +319,12 @@ answerInput.addEventListener("keydown", (e) => {
         .filter(obj => obj.visible)
         .reduce((lowest, obj) => (!lowest || obj.y > lowest.y ? obj : lowest), null);
 
+      let lowestText;
       if (lowest) {
-        console.log(`Wrong answer: ${lowest.text} = ${lowest.result}`);
+        lowestText=`Wrong answer: ${lowest.text} = ${lowest.result}`;
       }
 
-      endGame();
+      endGame(lowestText, value);
       return;
     }
 
@@ -451,7 +460,7 @@ document.addEventListener("mousemove", (e) => {
 });
 
 
-function startGenericCountdown(wrapperId, barId, callback) {
+function startGenericCountdown(wrapperId, barId, callback, customDuration = null) {
   loadingActive = true;
   const wrapper = document.getElementById(wrapperId);
   const bar = document.getElementById(barId);
@@ -459,7 +468,7 @@ function startGenericCountdown(wrapperId, barId, callback) {
   wrapper.style.display = "block";
   bar.style.width = "100%";
 
-  let duration = countdownDuration;
+  let duration = customDuration !== null ? customDuration : countdownDuration;
   let start = null;
 
   function animate(timestamp) {

@@ -294,3 +294,27 @@ label {
 #settings-close:hover{
   color: green;
 }
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: black;
+  border: 1px solid darkgreen;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Dark green checkmark for 16x16 size */
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid darkgreen;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
